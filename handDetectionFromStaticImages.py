@@ -93,6 +93,8 @@ def getBoundingBoxes(image, net):
 
 def inferAndSaveBBCrop(images, net):
 
+    imageCounter = 0 
+
     for image in images:
 
         img = cv2.imread(image)
@@ -101,6 +103,8 @@ def inferAndSaveBBCrop(images, net):
 
         results = getBoundingBoxes(img, net)
 
+        handCounter = 1
+
         for detection in results:
 
             id, name, confidence, x, y, w, h = detection
@@ -108,9 +112,16 @@ def inferAndSaveBBCrop(images, net):
             cropped_img = img[y-int(0.05*imageHeight):y+h+int(0.05*imageHeight), x-int(0.05*imageWidth):x+w+int(0.05*imageWidth)]
 
             resized_cropped_img = cv2.resize(cropped_img, (50, 50))
-            cv2.imshow('image', resized_cropped_img)
 
-            cv2.waitKey(0)
+            imageName = 'image' + str(imageCounter) + '_handNumber' + str(handCounter) + '.png'
+
+            cv2.imwrite(imageName, resized_cropped_img)
+            
+            handCounter += 1
+
+        print("Found " + str(handCounter - 1) + " hand(s) in image number " + str(imageCounter))
+
+        imageCounter += 1 
 
 
 
