@@ -27,6 +27,41 @@ def setNetFromPreTrainedParameters(netConfigFile, netWeightsFile):
 
     return net
 
+def getFramePerSecond():
+
+    cap = cv2.VideoCapture(0)
+    framerate = cap.get(5)
+    framecount = 0
+    imgNumber = 0
+
+    while(True):
+        # Capture frame-by-frame
+        success, image = cap.read()
+
+        if success:
+            cv2.imshow('image',image)
+        else:
+            break
+
+        framecount += 1
+        
+        if (framecount == framerate/2):
+            framecount = 0
+            imageName = 'imageNumber' + str(imgNumber) + '.jpg'
+            cv2.imwrite(imageName, image)
+
+
+            imgNumber += 1
+            
+
+        # Check end of video
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+
+    # When everything done, release the capture
+    cap.release()
+    cv2.destroyAllWindows()
+
 
 
 def getBoundingBoxes(image, net):
@@ -46,7 +81,6 @@ def getBoundingBoxes(image, net):
 
     layerOutputs = net.forward(layerName)
     
-
     boxes = []
     confidences = []
     classIDs = []
@@ -109,14 +143,14 @@ def inferAndSaveBBCrop(images, net):
 
             id, name, confidence, x, y, w, h = detection
 
-            cropped_img = img[y-int(0.05*imageHeight):y+h+int(0.05*imageHeight), x-int(0.05*imageWidth):x+w+int(0.05*imageWidth)]
+            cropped_img = img[y-int(0.0025*imageHeight):y+h+int(0.0025*imageHeight), x-int(0.0025*imageWidth):x+w+int(0.0025*imageWidth)]
 
             resized_cropped_img = cv2.resize(cropped_img, (50, 50))
 
             imageName = 'image' + str(imageCounter) + '_handNumber' + str(handCounter) + '.png'
 
             cv2.imwrite(imageName, resized_cropped_img)
-            
+        
             handCounter += 1
 
         print("Found " + str(handCounter - 1) + " hand(s) in image number " + str(imageCounter))
@@ -128,9 +162,11 @@ def inferAndSaveBBCrop(images, net):
 
 if __name__ == "__main__":
 
+    #getFramePerSecond()
+
     net = setNetFromPreTrainedParameters("models/cross-hands.cfg", "models/cross-hands.weights")
 
-    images = getStaticImages("images/")
+    images = getStaticImages("testVideo/")
     
     inferAndSaveBBCrop(images, net)
 
