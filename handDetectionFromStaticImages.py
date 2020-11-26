@@ -27,12 +27,41 @@ def setNetFromPreTrainedParameters(netConfigFile, netWeightsFile):
 
     return net
 
-def getFramePerSecond():
+def realTimeInferAndSave(img, net, detectionTime):
+
+    imageHeight, imageWidth = img.shape[:2]
+
+    results = getBoundingBoxes(img, net)
+
+    handCounter = 1
+
+    for detection in results:
+
+        id, name, confidence, x, y, w, h = detection
+
+        cropped_img = img[y-int(0.0025*imageHeight):y+h+int(0.0025*imageHeight), x-int(0.0025*imageWidth):x+w+int(0.0025*imageWidth)]
+
+        resized_cropped_img = cv2.resize(cropped_img, (50, 50))
+
+        imageName = 'handAt' + detectionTime + '.png'
+
+        cv2.imwrite(imageName, resized_cropped_img)
+    
+        handCounter += 1
+
+    print("Found " + str(handCounter - 1) + " hand(s) ")
+
+
+
+def realTimeCaptureAndInfer():
 
     cap = cv2.VideoCapture(0)
     framerate = cap.get(5)
     framecount = 0
+    globalFrameCount = 0
     imgNumber = 0
+    net = setNetFromPreTrainedParameters("models/cross-hands.cfg", "models/cross-hands.weights")
+
 
     while(True):
         # Capture frame-by-frame
@@ -44,14 +73,13 @@ def getFramePerSecond():
             break
 
         framecount += 1
-        
+        globalFrameCount += 1
         if (framecount == framerate/2):
             framecount = 0
-            imageName = 'imageNumber' + str(imgNumber) + '.jpg'
+            imageName = 'realTimeImages/' + 'imageNumber' + str(imgNumber) + '.jpg'
             cv2.imwrite(imageName, image)
+            realTimeInferAndSave(image, net, str(globalFrameCount))
 
-
-            imgNumber += 1
             
 
         # Check end of video
@@ -162,11 +190,12 @@ def inferAndSaveBBCrop(images, net):
 
 if __name__ == "__main__":
 
-    #getFramePerSecond()
+    realTimeCaptureAndInfer()
 
-    net = setNetFromPreTrainedParameters("models/cross-hands.cfg", "models/cross-hands.weights")
+    #net = setNetFromPreTrainedParameters("models/cross-hands.cfg", "models/cross-hands.weights")
 
-    images = getStaticImages("testVideo/")
+    #images = getStaticImages("testVideo/")
     
-    inferAndSaveBBCrop(images, net)
+    
+    #inferAndSaveBBCrop(images, net)
 
