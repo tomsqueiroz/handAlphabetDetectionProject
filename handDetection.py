@@ -186,15 +186,20 @@ def inferAndSaveBBCrop(images, net):
 
             id, name, confidence, x, y, w, h = detection
 
-            cropped_img = img[y-int(0.0025*imageHeight):y+h+int(0.0025*imageHeight), x-int(0.0025*imageWidth):x+w+int(0.0025*imageWidth)]
+            try:
 
-            resized_cropped_img = cv2.resize(cropped_img, (50, 50))
+                cropped_img = img[y-int(0.0025*imageHeight):y+h+int(0.0025*imageHeight), x-int(0.0025*imageWidth):x+w+int(0.0025*imageWidth)]
 
-            imageName = 'croppedImages/' + 'image' + str(imageCounter) + '_handNumber' + str(handCounter) + '.png'
+                resized_cropped_img = cv2.resize(cropped_img, (50, 50))
 
-            cv2.imwrite(imageName, resized_cropped_img)
+                imageName = 'croppedImages/' + 'image' + str(imageCounter) + '_handNumber' + str(handCounter) + '.png'
+
+                cv2.imwrite(imageName, resized_cropped_img)
         
-            handCounter += 1
+                handCounter += 1
+
+            except:
+                print("Exception")
 
         print("Found " + str(handCounter - 1) + " hand(s) in image number " + str(imageCounter))
 
