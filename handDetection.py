@@ -62,9 +62,13 @@ def realTimeInferAndSave(img, net, detectionTime, saveFlag):
     return boundingBoxes
 
 
-def realTimeCaptureAndInfer():
+def realTimeCaptureAndInfer(filePath):
 
-    cap = cv2.VideoCapture(0)
+    if(filePath == None):
+        cap = cv2.VideoCapture(0)
+    else:
+        cap = cv2.VideoCapture(filePath)
+    
     framerate = cap.get(5)
     framecount = 0
     globalFrameCount = 0
@@ -85,6 +89,7 @@ def realTimeCaptureAndInfer():
             imageName = 'realTimeImages/' + 'imageNumber' + str(imgNumber) + '.jpg'
             cv2.imwrite(imageName, image)
             boundingBoxes = realTimeInferAndSave(image, net, str(globalFrameCount), True)
+            imgNumber += 1
 
         if success:
             cv2.imshow('image',image)
@@ -185,7 +190,7 @@ def inferAndSaveBBCrop(images, net):
 
             resized_cropped_img = cv2.resize(cropped_img, (50, 50))
 
-            imageName = 'image' + str(imageCounter) + '_handNumber' + str(handCounter) + '.png'
+            imageName = 'croppedImages/' + 'image' + str(imageCounter) + '_handNumber' + str(handCounter) + '.png'
 
             cv2.imwrite(imageName, resized_cropped_img)
         
@@ -201,6 +206,7 @@ def createDirectories():
     createFolder('realTimeImages')
     createFolder('realTimeHands')
     createFolder('models')
+    createFolder('croppedImages')
     
 
 
@@ -217,9 +223,35 @@ def createFolder(folderName):
     print ("Successfully created the directory %s " % (path + folderName))
 
 
+def downloadPreTrainedModels():
+    path = os.getcwd()
+
+    os.system("cd/models")
+    os.system("wget https://github.com/cansik/yolo-hand-detection/releases/download/pretrained/cross-hands.cfg -N -P " + path +  "/models")
+    os.system("wget https://github.com/cansik/yolo-hand-detection/releases/download/pretrained/cross-hands.weights -N -P " + path + "/models")
+
+def getDetectionMode():
+
+    return input("Escolha o modo de execucao:\n\t1 - Arquivos de Imagem\t\t2 - Arquivo de Video\t\t3 - WebCam\n")
+
 if __name__ == "__main__":
 
     createDirectories()
+    downloadPreTrainedModels()
+    option = getDetectionMode()
+
+    if(option == str(1)):
+        net = setNetFromPreTrainedParameters("models/cross-hands.cfg", "models/cross-hands.weights")
+        images = getStaticImages("images/")
+        inferAndSaveBBCrop(images, net)
+        print("Images saved to croppedImages folder")
+    
+    elif(option == str(2)):
+        print("oi")
+
+
+    elif(option == str(3)):
+        realTimeCaptureAndInfer(None)
 
     #realTimeCaptureAndInfer()
 
