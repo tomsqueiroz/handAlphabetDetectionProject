@@ -27,7 +27,7 @@ def setNetFromPreTrainedParameters(netConfigFile, netWeightsFile):
 
     return net
 
-def realTimeInferAndSave(img, net, detectionTime):
+def realTimeInferAndSave(img, net, detectionTime, saveFlag):
 
     imageHeight, imageWidth = img.shape[:2]
 
@@ -35,22 +35,31 @@ def realTimeInferAndSave(img, net, detectionTime):
 
     handCounter = 1
 
+    boundingBoxes = []
+
     for detection in results:
+
+        boundingBox = []
 
         id, name, confidence, x, y, w, h = detection
 
-        cropped_img = img[y-int(0.0025*imageHeight):y+h+int(0.0025*imageHeight), x-int(0.0025*imageWidth):x+w+int(0.0025*imageWidth)]
+        boundingBox.append(x)
+        boundingBox.append(y)
+        boundingBox.append(w)
+        boundingBox.append(h)
 
-        resized_cropped_img = cv2.resize(cropped_img, (50, 50))
-
-        imageName = 'handAt' + detectionTime + '.png'
-
-        cv2.imwrite(imageName, resized_cropped_img)
+        if(saveFlag):
+            cropped_img = img[y-int(0.0025*imageHeight):y+h+int(0.0025*imageHeight), x-int(0.0025*imageWidth):x+w+int(0.0025*imageWidth)]
+            resized_cropped_img = cv2.resize(cropped_img, (50, 50))
+            imageName = 'realTimeHands/' + 'handAt' + detectionTime + '.png'
+            cv2.imwrite(imageName, resized_cropped_img)
     
+        boundingBoxes.append(boundingBox)
         handCounter += 1
 
     print("Found " + str(handCounter - 1) + " hand(s) ")
 
+    return boundingBoxes
 
 
 def realTimeCaptureAndInfer():
@@ -67,19 +76,32 @@ def realTimeCaptureAndInfer():
         # Capture frame-by-frame
         success, image = cap.read()
 
-        if success:
-            cv2.imshow('image',image)
-        else:
-            break
-
         framecount += 1
         globalFrameCount += 1
+
+        #Faz o reconhecimento da mao e passa para o classificador alem de printar o bb
         if (framecount == framerate/2):
             framecount = 0
             imageName = 'realTimeImages/' + 'imageNumber' + str(imgNumber) + '.jpg'
             cv2.imwrite(imageName, image)
-            realTimeInferAndSave(image, net, str(globalFrameCount))
+            boundingBoxes = realTimeInferAndSave(image, net, str(globalFrameCount), True)
 
+            for boundingBox in boundingBoxes:
+                color = (0, 255, 255)
+                cv2.rectangle(image, (boundingBox[0], boundingBox[1]), (boundingBox[0] + boundingBox[2], boundingBox[1] + boundingBox[3]), color, 2)
+
+        #Faz o reconhecimento mas apenas printa bb
+        else:
+            boundingBoxes = realTimeInferAndSave(image, net, str(globalFrameCount), False)
+
+            for boundingBox in boundingBoxes:
+                color = (0, 255, 255)
+                cv2.rectangle(image, (boundingBox[0], boundingBox[1]), (boundingBox[0] + boundingBox[2], boundingBox[1] + boundingBox[3]), color, 2)
+     
+        if success:
+            cv2.imshow('image',image)
+        else:
+            break
             
 
         # Check end of video
