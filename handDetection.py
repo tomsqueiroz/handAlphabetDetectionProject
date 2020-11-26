@@ -86,18 +86,6 @@ def realTimeCaptureAndInfer():
             cv2.imwrite(imageName, image)
             boundingBoxes = realTimeInferAndSave(image, net, str(globalFrameCount), True)
 
-            for boundingBox in boundingBoxes:
-                color = (0, 255, 255)
-                cv2.rectangle(image, (boundingBox[0], boundingBox[1]), (boundingBox[0] + boundingBox[2], boundingBox[1] + boundingBox[3]), color, 2)
-
-        #Faz o reconhecimento mas apenas printa bb
-        else:
-            boundingBoxes = realTimeInferAndSave(image, net, str(globalFrameCount), False)
-
-            for boundingBox in boundingBoxes:
-                color = (0, 255, 255)
-                cv2.rectangle(image, (boundingBox[0], boundingBox[1]), (boundingBox[0] + boundingBox[2], boundingBox[1] + boundingBox[3]), color, 2)
-     
         if success:
             cv2.imshow('image',image)
         else:
@@ -207,12 +195,33 @@ def inferAndSaveBBCrop(images, net):
 
         imageCounter += 1 
 
+def createDirectories():
 
+    createFolder('images')
+    createFolder('realTimeImages')
+    createFolder('realTimeHands')
+    createFolder('models')
+    
+
+
+def createFolder(folderName):
+    path = os.getcwd()
+
+    try:
+        if not os.path.exists(path + '/' + folderName):
+            os.mkdir(path + '/' + folderName)
+
+    except OSError:
+        print ("Creation of the directory %s failed" % (path + folderName))
+    
+    print ("Successfully created the directory %s " % (path + folderName))
 
 
 if __name__ == "__main__":
 
-    realTimeCaptureAndInfer()
+    createDirectories()
+
+    #realTimeCaptureAndInfer()
 
     #net = setNetFromPreTrainedParameters("models/cross-hands.cfg", "models/cross-hands.weights")
 
