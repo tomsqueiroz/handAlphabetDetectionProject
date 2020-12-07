@@ -121,7 +121,6 @@ def getBoundingBoxes(image, net):
     blob = cv2.dnn.blobFromImage(image, 1 / 255.0, (416, 416), swapRB=True, crop=False)
     net.setInput(blob)
 
-
     layerOutputs = net.forward(layerName)
     
     boxes = []
@@ -231,7 +230,7 @@ def createFolder(folderName):
 def downloadPreTrainedModels():
     path = os.getcwd()
 
-    os.system("cd/models")
+    os.system("cd /models")
     os.system("wget https://github.com/cansik/yolo-hand-detection/releases/download/pretrained/cross-hands.cfg -N -P " + path +  "/models")
     os.system("wget https://github.com/cansik/yolo-hand-detection/releases/download/pretrained/cross-hands.weights -N -P " + path + "/models")
 
@@ -252,18 +251,10 @@ if __name__ == "__main__":
         print("Images saved to croppedImages folder")
     
     elif(option == str(2)):
-        print("oi")
+        print("Video files are not supported yet")
 
 
     elif(option == str(3)):
         realTimeCaptureAndInfer(None)
 
-    #realTimeCaptureAndInfer()
-
-    #net = setNetFromPreTrainedParameters("models/cross-hands.cfg", "models/cross-hands.weights")
-
-    #images = getStaticImages("testVideo/")
-    
-    
-    #inferAndSaveBBCrop(images, net)
 
